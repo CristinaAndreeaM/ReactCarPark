@@ -22,7 +22,7 @@ const CarItem = ({ car }) => {
             <img src={image} />
         </div>
         <div className="carItemcontent">
-            <h2>Manufacturer: {car.manufacturer}, Model: {model}</h2>
+            <h2>{car.manufacturer}, {model}</h2>
             <p>Vin: {vin}</p>
             <p>Year: {constuctionYear}</p>
         </div>

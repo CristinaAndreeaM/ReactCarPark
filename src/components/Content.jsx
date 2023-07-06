@@ -16,6 +16,8 @@ const Content = () => {
     const [sortBy, setSortBy] = useState(undefined);
     const [manufacturerItems, setManufacturerItems] = useState([]);
     const [modelItems, setModelItems] = useState([]);
+    const [fuelTypeFilter, setFuelTypeFilter] = useState(undefined);
+    const [fuelTypeItems, setFuelTypeItems] = useState([]);
 
     useEffect(() => {
         getCarList();
@@ -23,9 +25,13 @@ const Content = () => {
 
     useEffect(() => {
         if (carList && carList.length) {
+
+            const uniqueFuelTypes=[...new Set(carList.map(car => car.fuelType))];
+            const updatedFuelTypesItems= uniqueFuelTypes.map((fuelType, index) => ({id: index, text: fuelType, code: {fuelType: fuelType}}));
             const uniqueManufacturers = [...new Set(carList.map(car => car.manufacturer))];
-            const updatedManufacturerItems = uniqueManufacturers.map((manufacturer, index) => ({ id: index + 1, text: manufacturer, code: { manufacturer: manufacturer }}));
+            const updatedManufacturerItems = uniqueManufacturers.map((manufacturer, index) => ({ id: index , text: manufacturer, code: { manufacturer: manufacturer }}));
             setManufacturerItems(updatedManufacturerItems);
+            setFuelTypeItems(updatedFuelTypesItems);
         }
     }, [carList]);
 
@@ -35,12 +41,16 @@ const Content = () => {
         if (manufacturerFilter) {
             updatedCarList = updatedCarList.filter(car => car.manufacturer === manufacturerFilter.code.manufacturer);
             const uniqueModels = [...new Set(updatedCarList.map(car => car.model))];
-            const newModelItems = uniqueModels.map((model, index) => ({ id: index + 1, text: model, code: { model: model }}));
+            const newModelItems = uniqueModels.map((model, index) => ({ id: index , text: model, code: { model: model }}));
             setModelItems(newModelItems);
         }
 
         if (modelFilter) {
             updatedCarList = updatedCarList.filter(car => car.model === modelFilter.code.model);
+        }
+        if(fuelTypeFilter)
+        {
+            updatedCarList = updatedCarList.filter(car => car.fuelType === fuelTypeFilter.code.fuelType);
         }
 
         if (sortBy) {
@@ -48,7 +58,7 @@ const Content = () => {
         }
 
         setSortedCarList(updatedCarList);
-    }, [carList, manufacturerFilter, modelFilter, sortBy])
+    }, [carList, manufacturerFilter, modelFilter, sortBy, fuelTypeFilter])
 
     const dropdownItems = [
         { id: 1, text: "Construction Year ASC", code: { key: 'constuctionYear', direction: "ASC" } },
@@ -80,12 +90,18 @@ const Content = () => {
     function handleModelFilter(item) {
         setModelFilter(item);
     }
+    
+    function handleFuelTypeFilter(item)
+    {
+        setFuelTypeFilter(item);
+    }
 
     function clearFilters() {
         setManufacturerFilter(undefined);
         setModelFilter(undefined);
         setSortBy(undefined);
         setModelItems([]);
+        setFuelTypeFilter(undefined);
     }
 
     if (loading) {
@@ -100,10 +116,10 @@ const Content = () => {
         <div className="contentWrapper">
             <div className="content">
                 <div className="filters">
-                    <span>Filters</span>
                     <Dropdown items={dropdownItems} onItemSelect={handleYearSort} title="Sort by Year"/>
                     <Dropdown items={manufacturerItems} onItemSelect={handleManufacturerFilter} title="Filter by Manufacturer" />
                     <Dropdown items={modelItems} onItemSelect={handleModelFilter} title="Filter by Model"/>
+                    <Dropdown items={fuelTypeItems} onItemSelect={handleFuelTypeFilter} title="Filter by Fuel Type"/>
                     <button onClick={clearFilters}>Clear Filters</button>
                 </div>
                 <div>
