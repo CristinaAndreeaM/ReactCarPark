@@ -1,78 +1,98 @@
-/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react"
 import "./Content.css"
 import CarItem from "./CarItem"
 import getCarList from "./data/getCarList"
 import { useMainStore } from "../App"
+import Dropdown from "./DropDown"
 
 const Content = () => {
-
     const carList = useMainStore(state => state.carList)
     const loading = useMainStore(state => state.carListLoading)
-    const error = useMainStore(state => state.carListError)
-    //const {carList, loading, error} = useCarList()
-    const [sortedCarList, setSortedCarList] = useState([])
-    const [filteredCarList, setFilteredCarList]= useState([])
+    const error   = useMainStore(state => state.carListError)
 
+    const [sortedCarList, setSortedCarList] = useState([])
+    const [manufacturerFilter, setManufacturerFilter] = useState(undefined);
+    const [modelFilter, setModelFilter] = useState(undefined);
+    const [sortBy, setSortBy] = useState(undefined);
+    const [manufacturerItems, setManufacturerItems] = useState([]);
+    const [modelItems, setModelItems] = useState([]);
 
     useEffect(() => {
         getCarList();
-      }, []);
+    }, []);
 
     useEffect(() => {
-      if(carList){
-        setSortedCarList(carList);
-        setFilteredCarList(carList);
-        
-      }
-    }, [carList])
+        if (carList && carList.length) {
+            const uniqueManufacturers = [...new Set(carList.map(car => car.manufacturer))];
+            const updatedManufacturerItems = uniqueManufacturers.map((manufacturer, index) => ({ id: index + 1, text: manufacturer, code: { manufacturer: manufacturer }}));
+            setManufacturerItems(updatedManufacturerItems);
+        }
+    }, [carList]);
+
+    useEffect(() => {
+        let updatedCarList = [...carList];
+
+        if (manufacturerFilter) {
+            updatedCarList = updatedCarList.filter(car => car.manufacturer === manufacturerFilter.code.manufacturer);
+            const uniqueModels = [...new Set(updatedCarList.map(car => car.model))];
+            const newModelItems = uniqueModels.map((model, index) => ({ id: index + 1, text: model, code: { model: model }}));
+            setModelItems(newModelItems);
+        }
+
+        if (modelFilter) {
+            updatedCarList = updatedCarList.filter(car => car.model === modelFilter.code.model);
+        }
+
+        if (sortBy) {
+            updatedCarList.sort((a, b) => sort(a, b, sortBy.code));
+        }
+
+        setSortedCarList(updatedCarList);
+    }, [carList, manufacturerFilter, modelFilter, sortBy])
 
     const dropdownItems = [
-        {id: 1, text: "Constuction Year ASC", code: "ASC"},
-        {id: 2, text: "Constuction Year DESC", code: "DESC"}
+        { id: 1, text: "Construction Year ASC", code: { key: 'constuctionYear', direction: "ASC" } },
+        { id: 2, text: "Construction Year DESC", code: { key: 'constuctionYear', direction: "DESC" } }
     ]
-
     
-    const modelItems = [
-        {id: 1, text: "BMW", code: "bmw"},
-        {id: 2, text: "Ford", code: "ford"}
-    ]
+    function sort(a, b, code) {
+        const key = code.key;
+        const direction = code.direction;
 
-    function sort(a, b, direction){
         switch (direction) {
             case "ASC":
-                return parseInt(a.constuctionYear) - parseInt(b.constuctionYear)
+                return parseInt(a[key]) - parseInt(b[key])
             case "DESC":
-                return parseInt(b.constuctionYear) - parseInt(a.constuctionYear)
+                return parseInt(b[key]) - parseInt(a[key])
             default:
-                break;
+                return 0;
         }
     }
 
-
-
-
-      
-
-    function handleYearSort(item){
-        const temp = carList.sort((a,b) => sort(a,b, item.code))
-        setSortedCarList([...temp])
-        
+    function handleYearSort(item) {
+        setSortBy(item);
     }
 
-
-    function handleModelSort(item)
-    {
-        const tempModel = carList.sortModel((a,b) => sortModel(a,b, item.code))
-        setFilteredCarList([...tempModel]);
+    function handleManufacturerFilter(item) {
+        setManufacturerFilter(item);
     }
 
+    function handleModelFilter(item) {
+        setModelFilter(item);
+    }
 
-    if(loading){
+    function clearFilters() {
+        setManufacturerFilter(undefined);
+        setModelFilter(undefined);
+        setSortBy(undefined);
+        setModelItems([]);
+    }
+
+    if (loading) {
         return <div>Loading</div>
     }
 
-    if(error || !carList){
+    if (error || !carList) {
         return <div>Error</div>
     }
 
@@ -80,56 +100,24 @@ const Content = () => {
         <div className="contentWrapper">
             <div className="content">
                 <div className="filters">
-                    Filters
-                   
-                    <Dropdown items={dropdownItems} onItemSelect={handleYearSort}/>
-                    {/* <Dropdown items={modelItems} onItemSelect={handleModelSort}/> */}
+                    <span>Filters</span>
+                    <Dropdown items={dropdownItems} onItemSelect={handleYearSort} title="Sort by Year"/>
+                    <Dropdown items={manufacturerItems} onItemSelect={handleManufacturerFilter} title="Filter by Manufacturer" />
+                    <Dropdown items={modelItems} onItemSelect={handleModelFilter} title="Filter by Model"/>
+                    <button onClick={clearFilters}>Clear Filters</button>
                 </div>
                 <div>
                     <div className="carList">
-                        {sortedCarList?.map((car) => {
-                            return <CarItem key={car.vin} car={car}/>
-                        })}
-                        
+                        {
+                            sortedCarList?.map((car) => {
+                                return <CarItem key={car.vin} car={car} />
+                            })
+                        }
                     </div>
-                    
                 </div>
             </div>
         </div>
     )
 }
-
-
-const Dropdown = ({items, onItemSelect}) => {
-
-    const [isOpen, setIsOpen] = useState(false)
-    const [selectedItem, setSelectedItem] = useState(undefined)
-    
-
-    function handleItemSelect(item) {
-        onItemSelect?.(item)
-        setSelectedItem(item)
-        setIsOpen(prev => !prev)
-    }
-
-    return <div className="dropdown">
-        <div onClick={() => setIsOpen(prev => !prev)}>
-            {
-            selectedItem ?
-            <button>{selectedItem.text}</button> :
-            <button>Sort</button>
-            }
-        </div>
-        
-        { isOpen && <div className="dropdown_menu">
-            {items.map((item) => {
-                return <li key={item.id}>
-                    <button onClick={() => handleItemSelect(item)}>{item.text}</button>
-                </li>
-            })}
-        </div>}
-    </div>
-}
-
 
 export default Content

@@ -4,27 +4,29 @@ import "./Content.css"
 import getCarList from "./data/getCarList"
 
 
-const CarItem = ({car})=>{
-    const {image, manufacturer, model, vin, constructionYear, price} = car
+const CarItem = ({ car }) => {
+    const { image, manufacturer, model, vin, constuctionYear, price } = car
     const [savedCar, setSavedCar] = useState(null);
 
+    useEffect(() => {
+        // console.log(car)
+        // console.log(constuctionYear)
+    })
 
     const handleCarClick = () => {
         setSelectedCar(car);
-      };
-      
+    };
 
-    return  <div className="carItem">
+    return <div className="carItem">
         <div className="imageContainer">
-            <img src={image}/>
+            <img src={image} />
         </div>
-        <div className = "carItemcontent">
-            <h2>{car.manufacturer} {model}</h2>
-            <p>{vin}</p>
-            <p>{constructionYear}</p>
+        <div className="carItemcontent">
+            <h2>Manufacturer: {car.manufacturer}, Model: {model}</h2>
+            <p>Vin: {vin}</p>
+            <p>Year: {constuctionYear}</p>
         </div>
-
-        <div className = "carItemRightSide">
+        <div className="carItemRightSide">
             <h2>{price}</h2>
         </div>
     </div>
