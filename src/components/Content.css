@@ -1,0 +1,88 @@
+.contentWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.content {
+  padding: 1em 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.carList { 
+  flex: 1;
+  display: grid;
+  gap: 0.6em;
+  grid-template-rows: repeat(auto-fill, minmax(250px, 250px));
+  max-width: 1000px;
+}
+
+.carItem {
+  min-height: 250px;
+  display: flex;
+  border-radius: 0.4em;
+  border: black 1px solid;
+  padding: 0.5em;
+  gap: 1em;
+}
+
+.carItemContent { 
+  flex: 1;
+}
+
+.carItemRightSide {
+  min-width: 5em;
+}
+
+.imageContainer {
+  height: 100%;
+  display: flex;
+}
+
+.imageContainer img {
+  object-fit: cover;
+  max-width: 300px;
+  border-radius: 0.5em;
+}
+
+.filters { 
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1em;
+}
+
+.dropdown {
+  position: relative;
+  width: 300px;
+}
+
+.dropdown > div > button {
+  width: 100%;
+  border-radius: 0px;
+  text-align: left;
+}
+
+.dropdown_menu { 
+  position: absolute;
+  list-style-type: none;
+  background-color: white;
+  border: 1px solid grey;
+  width: 100%;
+}
+
+.dropdown_menu > li {
+  margin: 0;
+  background-color: white;
+}
+
+.dropdown_menu > li:hover {
+  background-color: lightgray;
+}
+
+.dropdown_menu > li > button {
+  cursor: pointer;
+  width: 100%;
+  border-radius: 0px;
+  text-align: left;
+}
